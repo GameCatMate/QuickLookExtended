@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <GeneratePreviewAssets>true</GeneratePreviewAssets>
+    <PreviewOutput>$(BaseIntermediateOutputPath)quicklook</PreviewOutput>
+  </PropertyGroup>
+
+  <Target Name="GenerateQuickLookPreview" BeforeTargets="Build">
+    <Message Text="Generating QuickLook preview assets" Importance="high" />
+    <MakeDir Directories="$(PreviewOutput)" />
+    <WriteLinesToFile
+      File="$(PreviewOutput)/formats.txt"
+      Lines="yaml;tf;csproj;md"
+      Overwrite="true" />
+  </Target>
+</Project>

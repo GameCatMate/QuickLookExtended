@@ -1,0 +1,20 @@
+title = "Quick Look Demo"
+enabled = true
+ports = [8080, 9090, 9443]
+
+[server]
+host = "127.0.0.1"
+timeout_seconds = 5
+
+[features]
+syntax_highlighting = true
+native_selection = true
+copy_selection = true
+
+[[workers]]
+name = "api"
+count = 3
+
+[[workers]]
+name = "queue"
+count = 2

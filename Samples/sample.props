@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <Configuration>Debug</Configuration>
+    <Platform>AnyCPU</Platform>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>false</WarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<preview name="QuickLookExtended">
+  <formats>
+    <format extension="yaml" highlighted="true" />
+    <format extension="tf" highlighted="true" />
+    <format extension="md" rendered="true" />
+  </formats>
+  <limits previewBytes="524288" highlightedBytes="262144" />
+</preview>

@@ -1,0 +1,41 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+		1D6058900D05DD3D006BFB54 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = 1D6058910D05DD3D006BFB54 /* Build configuration list for PBXProject "Sample" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			mainGroup = 1D6058920D05DD3D006BFB54;
+			productRefGroup = 1D6058930D05DD3D006BFB54 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D6058940D05DD3D006BFB54 /* Sample */,
+			);
+		};
+		1D6058940D05DD3D006BFB54 /* Sample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D6058950D05DD3D006BFB54 /* Build configuration list for PBXNativeTarget "Sample" */;
+			buildPhases = (
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Sample;
+			productName = Sample;
+			productType = "com.apple.product-type.tool";
+		};
+	};
+	rootObject = 1D6058900D05DD3D006BFB54 /* Project object */;
+}

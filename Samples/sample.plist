@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>dev.gamecat.quicklook.demo</string>
+    <key>CFBundleName</key>
+    <string>QuickLook Demo</string>
+    <key>Enabled</key>
+    <true/>
+    <key>Ports</key>
+    <array>
+        <integer>8080</integer>
+        <integer>9090</integer>
+    </array>
+</dict>
+</plist>

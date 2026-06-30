@@ -1,0 +1,18 @@
+query PreviewFormats($search: String!) {
+  formats(search: $search) {
+    extension
+    syntax
+    highlighted
+    examples {
+      filename
+      size
+    }
+  }
+}
+
+mutation EnableFormat($extension: String!) {
+  enableFormat(extension: $extension) {
+    extension
+    enabled
+  }
+}

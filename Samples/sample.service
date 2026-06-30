@@ -1,0 +1,18 @@
+[Unit]
+Description=Quick Look Demo API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=quicklook
+Group=quicklook
+Environment=LOG_LEVEL=info
+Environment=PORT=8080
+WorkingDirectory=/opt/quicklook-demo
+ExecStart=/opt/quicklook-demo/server --config /etc/quicklook-demo/config.toml
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

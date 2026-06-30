@@ -1,0 +1,10 @@
+.git
+.gitignore
+Dockerfile
+build/
+DerivedData/
+*.log
+*.tmp
+.env
+node_modules/
+coverage/

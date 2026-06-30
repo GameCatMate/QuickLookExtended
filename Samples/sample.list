@@ -1,0 +1,11 @@
+# Demo package list
+curl
+git
+jq
+openssl
+postgresql
+redis
+ripgrep
+swiftlint
+tree
+zsh

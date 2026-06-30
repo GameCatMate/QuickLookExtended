@@ -1,368 +1,235 @@
-import Cocoa
+import AppKit
 import Quartz
+import UniformTypeIdentifiers
 
-@MainActor
-final class PreviewProvider: NSViewController, QLPreviewingController {
-    private static let maxPreviewBytes = 2 * 1024 * 1024
-    private var multiClickMonitor: Any?
-    private var copyMonitor: Any?
-    private var suppressNextMouseUp = false
-    private var lastHighlightRange: NSRange?
-    private weak var previewTextView: PreviewTextView?
+final class PreviewProvider: QLPreviewProvider, QLPreviewingController {
+    // These limits are baked into the built extension through Info.plist, which keeps runtime startup cheap.
+    private static let config = PreviewConfig.load()
+    private static let yamlExtensions: Set<String> = ["kubeconfig", "yaml", "yml"]
+    private static let hclExtensions: Set<String> = ["tf", "tfvars", "hcl", "nomad"]
+    private static let jsonExtensions: Set<String> = ["json", "jsonnet", "tfstate"]
+    private static let markdownExtensions: Set<String> = ["markdown", "md"]
+    private static let propertyListExtensions: Set<String> = ["csproj", "plist", "runsettings", "targets", "xml", "xsd"]
+    private static let codeExtensions: Set<String> = [
+        "bash", "c", "cmake", "cpp", "cs", "css", "cue", "fish", "go", "gradle", "graphql", "groovy",
+        "h", "hpp", "html", "java", "js", "jsx", "kt", "kts", "m", "mk", "mm", "podspec",
+        "proto", "ps1", "py", "rb", "rs", "sh", "sql", "swift", "ts", "tsx", "zsh"
+    ]
+    private static let configExtensions: Set<String> = [
+        "cfg", "conf", "config", "dockerignore", "editorconfig", "entitlements", "env", "gemrc",
+        "gitattributes", "gitignore", "ini", "npmrc", "pbxproj", "properties", "props",
+        "list", "lock", "log", "rst", "service", "sln", "toml", "xcconfig", "xcodeproj", "yarnrc"
+    ]
+    private static let plainTextExtensions: Set<String> = [
+        "bash", "cfg", "conf", "config", "crt", "csr", "cue", "dockerfile",
+        "dockerignore", "editorconfig", "entitlements", "env", "fish", "gemrc", "gitattributes",
+        "gitignore", "go", "gradle", "groovy", "ini", "jsonnet", "kt", "kts",
+        "kubeconfig", "list", "lock", "npmrc", "pbxproj", "pem", "podspec", "properties", "props", "pub",
+        "ps1", "rs", "rst", "service", "sln", "tfstate", "toml", "xcconfig", "xcodeproj", "yarnrc"
+    ]
 
-    override func loadView() {
-        view = NSView(frame: NSRect(x: 0, y: 0, width: 900, height: 700))
-    }
+    func providePreview(for request: QLFilePreviewRequest, completionHandler handler: @escaping (QLPreviewReply?, Error?) -> Void) {
+        let url = request.fileURL
+        let fileExtension = url.pathExtension.lowercased()
+        let contentType = UTType(filenameExtension: fileExtension)
+        let syntax = Self.syntax(for: url, contentType: contentType)
+        let isPlainText = fileExtension.isEmpty || Self.plainTextExtensions.contains(fileExtension) || contentType?.conforms(to: .text) == true
 
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        installEventMonitors()
-    }
-
-    private func installEventMonitors() {
-        guard multiClickMonitor == nil, copyMonitor == nil else {
+        // Returning no reply lets Quick Look fall back to the system preview for formats we do not own.
+        guard syntax != nil || isPlainText else {
+            handler(nil, CocoaError(.fileReadUnsupportedScheme))
             return
         }
 
-        multiClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp]) { [weak self] event in
-            guard let self else {
-                return event
+        do {
+            let (data, truncated) = try Self.previewData(from: url, syntax: syntax)
+            guard let text = try Self.text(from: data, syntax: syntax) else {
+                handler(nil, CocoaError(.fileReadCorruptFile))
+                return
             }
 
-            if event.type == .leftMouseDown {
-                guard event.clickCount > 1, self.previewTextView?.consumeMultiClick(event) == true else {
-                    return event
-                }
+            let previewText = text + (truncated ? "\n\n... preview truncated ..." : "")
+            let contentType: UTType
+            let previewData: Data
 
-                self.suppressNextMouseUp = true
-                return nil
+            if syntax == .markdown {
+                previewData = MarkdownRenderer.htmlData(from: previewText)
+                contentType = .html
+            } else if let syntax, previewText.utf8.count <= Self.config.maxHighlightedBytes {
+                // RTF generation is the expensive step. Keep highlighting capped so Space stays instant.
+                let highlightedText = Self.highlight(previewText, as: syntax)
+                previewData = try Self.rtfData(from: highlightedText)
+                contentType = .rtf
+            } else {
+                previewData = previewText.data(using: .utf8) ?? Data()
+                contentType = .plainText
             }
 
-            if self.suppressNextMouseUp, event.window === self.view.window {
-                self.suppressNextMouseUp = false
-                return nil
-            }
-
-            return event
+            let reply = QLPreviewReply(dataOfContentType: contentType, contentSize: CGSize(width: 900, height: 700)) { _ in previewData }
+            reply.title = url.lastPathComponent
+            handler(reply, nil)
+        } catch {
+            handler(nil, error)
         }
-        copyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard self?.copySelectedText(for: event) == true else {
-                return event
-            }
+    }
 
+    private static func syntax(for url: URL, contentType: UTType?) -> Syntax? {
+        let fileExtension = url.pathExtension.lowercased()
+        let filename = url.lastPathComponent.lowercased()
+
+        // Prefer filename and extension checks over UTType when macOS maps useful text extensions to unrelated types.
+        if yamlExtensions.contains(fileExtension) || filename == "kubeconfig" {
+            return .yaml
+        }
+        if hclExtensions.contains(fileExtension) {
+            return .hcl
+        }
+        if jsonExtensions.contains(fileExtension) {
+            return .json
+        }
+        if markdownExtensions.contains(fileExtension) {
+            return .markdown
+        }
+        if propertyListExtensions.contains(fileExtension) || contentType?.identifier.contains("property-list") == true {
+            return .propertyList
+        }
+        if codeExtensions.contains(fileExtension) {
+            return .code
+        }
+        if contentType?.conforms(to: .sourceCode) == true {
+            return .code
+        }
+        if configExtensions.contains(fileExtension) || filename == ".env" {
+            return .config
+        }
+        if fileExtension == "dockerfile" || filename == "dockerfile" {
+            return .dockerfile
+        }
+
+        return nil
+    }
+
+    private static func highlight(_ text: String, as syntax: Syntax) -> NSAttributedString {
+        switch syntax {
+        case .yaml:
+            return YAMLHighlighter.attributed(text, highlighted: true)
+        case .hcl:
+            return TerraformHighlighter.attributed(text)
+        case .json:
+            return JSONHighlighter.attributed(text)
+        case .markdown:
+            return YAMLHighlighter.attributed(text, highlighted: false)
+        case .propertyList:
+            return XMLHighlighter.attributed(text)
+        case .code:
+            return CodeHighlighter.attributed(text)
+        case .config:
+            return ConfigHighlighter.attributed(text)
+        case .dockerfile:
+            return DockerfileHighlighter.attributed(text)
+        }
+    }
+
+    private static func previewData(from url: URL, syntax: Syntax?) throws -> (Data, Bool) {
+        let sourceURL = previewSourceURL(for: url)
+        let attributes = try? FileManager.default.attributesOfItem(atPath: sourceURL.path)
+        let size = (attributes?[.size] as? NSNumber)?.intValue ?? 0
+        let readLimit = min(size, Self.config.maxPreviewBytes)
+
+        guard readLimit > 0 else {
+            return (Data(), false)
+        }
+
+        let handle = try FileHandle(forReadingFrom: sourceURL)
+        defer { try? handle.close() }
+
+        // The extension also claims public.data for extensionless files, so reject obvious binaries early.
+        let firstChunk = try handle.read(upToCount: min(readLimit, Self.config.binarySniffBytes)) ?? Data()
+        if syntax != .propertyList, !TextSniffer.isProbablyText(firstChunk) {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+
+        guard firstChunk.count < readLimit else {
+            return (firstChunk, size > Self.config.maxPreviewBytes)
+        }
+
+        var data = firstChunk
+        if let rest = try handle.read(upToCount: readLimit - firstChunk.count) {
+            data.append(rest)
+        }
+        return (data, size > Self.config.maxPreviewBytes)
+    }
+
+    private static func previewSourceURL(for url: URL) -> URL {
+        guard url.pathExtension.lowercased() == "xcodeproj" else {
+            return url
+        }
+
+        return url.appendingPathComponent("project.pbxproj", isDirectory: false)
+    }
+
+    private static func text(from data: Data, syntax: Syntax?) throws -> String? {
+        if let text = TextSniffer.text(from: data) {
+            return text
+        }
+
+        // Binary plists are text-like to the user, but must be converted before Quick Look can render them.
+        guard case .propertyList? = syntax else {
             return nil
         }
+
+        let object = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
+        let xmlData = try PropertyListSerialization.data(fromPropertyList: object, format: .xml, options: 0)
+        return String(data: xmlData, encoding: .utf8)
     }
 
-    override func viewDidDisappear() {
-        super.viewDidDisappear()
-
-        suppressNextMouseUp = false
-
-        if let multiClickMonitor {
-            NSEvent.removeMonitor(multiClickMonitor)
-            self.multiClickMonitor = nil
-        }
-        if let copyMonitor {
-            NSEvent.removeMonitor(copyMonitor)
-            self.copyMonitor = nil
-        }
-    }
-
-    private func copySelectedText(for event: NSEvent) -> Bool {
-        guard event.window === view.window, isCopyShortcut(event), previewTextView?.copySelectionToPasteboard() == true else {
-            return false
-        }
-
-        return true
-    }
-
-    private func isCopyShortcut(_ event: NSEvent) -> Bool {
-        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        let commandOnly = flags.contains(.command) && !flags.contains(.option) && !flags.contains(.control)
-        guard commandOnly else {
-            return false
-        }
-
-        let character = event.charactersIgnoringModifiers?.lowercased()
-        return event.keyCode == 8 || character == "c" || character == "с"
-    }
-
-    func preparePreviewOfFile(at url: URL) async throws {
-        preferredContentSize = CGSize(width: 900, height: 700)
-
-        let fileExtension = url.pathExtension.lowercased()
-        let isYAML = fileExtension == "yaml" || fileExtension == "yml"
-        let isTerraform = fileExtension == "tf"
-
-        guard isYAML || isTerraform || fileExtension.isEmpty else {
-            showGeneric(for: url)
-            return
-        }
-
-        let (data, truncated) = try Self.previewData(from: url)
-        guard let text = TextSniffer.text(from: data) else {
-            showGeneric(for: url)
-            return
-        }
-
-        let previewText = text + (truncated ? "\n\n... preview truncated ..." : "")
-        let attributedText = isTerraform ? TerraformHighlighter.attributed(previewText) : YAMLHighlighter.attributed(previewText, highlighted: isYAML)
-        showText(attributedText)
-    }
-
-    private static func previewData(from url: URL) throws -> (Data, Bool) {
-        let attributes = try? FileManager.default.attributesOfItem(atPath: url.path)
-        let size = (attributes?[.size] as? NSNumber)?.intValue ?? 0
-
-        guard size > maxPreviewBytes else {
-            return (try Data(contentsOf: url), false)
-        }
-
-        // ponytail: cap broad public.data previews; stream paging if huge files need full preview.
-        let handle = try FileHandle(forReadingFrom: url)
-        defer { try? handle.close() }
-        return (try handle.read(upToCount: maxPreviewBytes) ?? Data(), true)
-    }
-
-    private func showText(_ attributedText: NSAttributedString) {
-        let scrollView = NSScrollView(frame: view.bounds)
-        scrollView.autoresizingMask = [.width, .height]
-        scrollView.hasVerticalScroller = true
-        scrollView.hasHorizontalScroller = true
-
-        let textView = PreviewTextView(frame: scrollView.bounds)
-        textView.autoresizingMask = [.width, .height]
-        textView.isEditable = false
-        textView.isSelectable = true
-        textView.drawsBackground = true
-        textView.backgroundColor = .textBackgroundColor
-        textView.textContainerInset = NSSize(width: 16, height: 16)
-        textView.textContainer?.widthTracksTextView = false
-        // ponytail: finite width avoids first-click lazy-layout blanking in Quick Look.
-        textView.textContainer?.containerSize = NSSize(width: 100_000, height: CGFloat.greatestFiniteMagnitude)
-        textView.layoutManager?.allowsNonContiguousLayout = false
-        textView.isHorizontallyResizable = true
-        textView.isVerticallyResizable = true
-        textView.onPersistentHighlight = { [weak self] range in
-            self?.lastHighlightRange = range
-        }
-        textView.textStorage?.setAttributedString(attributedText)
-        if let textContainer = textView.textContainer {
-            textView.layoutManager?.ensureLayout(for: textContainer)
-        }
-        if let lastHighlightRange, NSMaxRange(lastHighlightRange) <= (attributedText.string as NSString).length {
-            textView.restorePersistentHighlight(lastHighlightRange)
-        }
-
-        scrollView.documentView = textView
-        previewTextView = textView
-        view.subviews = [scrollView]
-    }
-
-    private func showGeneric(for url: URL) {
-        preferredContentSize = CGSize(width: 760, height: 420)
-
-        let attributes = try? FileManager.default.attributesOfItem(atPath: url.path)
-        let size = (attributes?[.size] as? NSNumber).map { ByteCountFormatter.string(fromByteCount: $0.int64Value, countStyle: .file) } ?? ""
-        let modified = (attributes?[.modificationDate] as? Date).map { DateFormatter.localizedString(from: $0, dateStyle: .medium, timeStyle: .medium) } ?? ""
-
-        let icon = NSTextField(labelWithString: "?")
-        icon.alignment = .center
-        icon.font = .systemFont(ofSize: 92, weight: .light)
-        icon.textColor = .tertiaryLabelColor
-        icon.wantsLayer = true
-        icon.layer?.cornerRadius = 10
-        icon.layer?.backgroundColor = NSColor.textBackgroundColor.cgColor
-        icon.translatesAutoresizingMaskIntoConstraints = false
-
-        let title = NSTextField(labelWithString: url.lastPathComponent)
-        title.font = .systemFont(ofSize: 32, weight: .bold)
-        title.lineBreakMode = .byTruncatingMiddle
-
-        let details = NSTextField(labelWithString: [size, modified].filter { !$0.isEmpty }.joined(separator: "\n"))
-        details.font = .systemFont(ofSize: 17)
-        details.textColor = .secondaryLabelColor
-        details.maximumNumberOfLines = 2
-
-        let labels = NSStackView(views: [title, details])
-        labels.orientation = .vertical
-        labels.alignment = .leading
-        labels.spacing = 12
-
-        let stack = NSStackView(views: [icon, labels])
-        stack.orientation = .horizontal
-        stack.alignment = .centerY
-        stack.spacing = 54
-        stack.translatesAutoresizingMaskIntoConstraints = false
-
-        let container = NSView(frame: view.bounds)
-        container.autoresizingMask = [.width, .height]
-        container.addSubview(stack)
-        NSLayoutConstraint.activate([
-            icon.widthAnchor.constraint(equalToConstant: 150),
-            icon.heightAnchor.constraint(equalToConstant: 190),
-            stack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-            stack.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            stack.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 36),
-            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -36)
-        ])
-
-        view.subviews = [container]
-        lastHighlightRange = nil
-        previewTextView = nil
+    private static func rtfData(from attributedText: NSAttributedString) throws -> Data {
+        try attributedText.data(
+            from: NSRange(location: 0, length: attributedText.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+        )
     }
 }
 
-private final class PreviewTextView: NSTextView {
-    private var highlightedRange: NSRange?
-    private var highlightedSnapshot: NSAttributedString?
-    private var suppressNextMouseUp = false
-    var onPersistentHighlight: ((NSRange) -> Void)?
+private enum Syntax: Equatable {
+    case yaml
+    case hcl
+    case json
+    case markdown
+    case propertyList
+    case code
+    case config
+    case dockerfile
+}
 
-    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
-        true
-    }
+private struct PreviewConfig {
+    private static let defaultMaxPreviewBytes = 512 * 1024
+    private static let defaultMaxHighlightedBytes = 256 * 1024
+    private static let defaultBinarySniffBytes = 16 * 1024
 
-    override var mouseDownCanMoveWindow: Bool {
-        false
-    }
+    let maxPreviewBytes: Int
+    let maxHighlightedBytes: Int
+    let binarySniffBytes: Int
 
-    override func mouseDown(with event: NSEvent) {
-        window?.makeFirstResponder(self)
-
-        if event.clickCount > 1, consumeMultiClick(event) {
-            suppressNextMouseUp = true
-            return
-        }
-
-        super.mouseDown(with: event)
-    }
-
-    override func mouseUp(with event: NSEvent) {
-        guard !suppressNextMouseUp else {
-            suppressNextMouseUp = false
-            return
-        }
-
-        super.mouseUp(with: event)
-    }
-
-    func consumeMultiClick(_ event: NSEvent) -> Bool {
-        guard event.window === window else {
-            return false
-        }
-
-        let point = convert(event.locationInWindow, from: nil)
-        guard bounds.contains(point) else {
-            return false
-        }
-
-        window?.makeFirstResponder(self)
-        guard event.type == .leftMouseDown, let range = selectionRange(at: point, clickCount: event.clickCount) else {
-            return true
-        }
-
-        setSelectedRange(range)
-        scrollRangeToVisible(range)
-        applyPersistentHighlight(range)
-        onPersistentHighlight?(range)
-        return true
-    }
-
-    private func selectionRange(at point: NSPoint, clickCount: Int) -> NSRange? {
-        guard let layoutManager, let textContainer else {
-            return nil
-        }
-
-        let nsString = string as NSString
-        guard nsString.length > 0 else {
-            return nil
-        }
-
-        layoutManager.ensureLayout(for: textContainer)
-
-        let containerPoint = NSPoint(
-            x: point.x - textContainerOrigin.x,
-            y: point.y - textContainerOrigin.y
+    static func load() -> PreviewConfig {
+        // Xcode substitutes QLE_* build settings into these Info.plist keys during build.
+        let info = Bundle(for: PreviewProvider.self).infoDictionary ?? [:]
+        return PreviewConfig(
+            maxPreviewBytes: positiveInt("QLEMaxPreviewBytes", in: info, fallback: defaultMaxPreviewBytes),
+            maxHighlightedBytes: positiveInt("QLEMaxHighlightedBytes", in: info, fallback: defaultMaxHighlightedBytes),
+            binarySniffBytes: positiveInt("QLEBinarySniffBytes", in: info, fallback: defaultBinarySniffBytes)
         )
-        let glyphIndex = layoutManager.glyphIndex(for: containerPoint, in: textContainer)
-        let characterIndex = min(layoutManager.characterIndexForGlyph(at: glyphIndex), nsString.length - 1)
-
-        if clickCount == 2 {
-            return wordRange(in: nsString, at: characterIndex)
-        }
-
-        return nsString.lineRange(for: NSRange(location: characterIndex, length: 0))
     }
 
-    private func wordRange(in nsString: NSString, at index: Int) -> NSRange {
-        let wordCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
-
-        guard isWordCharacter(nsString.character(at: index), in: wordCharacters) else {
-            return nsString.rangeOfComposedCharacterSequence(at: index)
+    private static func positiveInt(_ key: String, in info: [String: Any], fallback: Int) -> Int {
+        if let number = info[key] as? NSNumber, number.intValue > 0 {
+            return number.intValue
         }
 
-        var start = index
-        while start > 0, isWordCharacter(nsString.character(at: start - 1), in: wordCharacters) {
-            start -= 1
+        if let string = info[key] as? String, let value = Int(string), value > 0 {
+            return value
         }
 
-        var end = index + 1
-        while end < nsString.length, isWordCharacter(nsString.character(at: end), in: wordCharacters) {
-            end += 1
-        }
-
-        return NSRange(location: start, length: end - start)
-    }
-
-    private func isWordCharacter(_ character: unichar, in characterSet: CharacterSet) -> Bool {
-        guard let scalar = UnicodeScalar(character) else {
-            return false
-        }
-
-        return characterSet.contains(scalar)
-    }
-
-    private func applyPersistentHighlight(_ range: NSRange) {
-        clearPersistentHighlight()
-        highlightedSnapshot = textStorage?.attributedSubstring(from: range)
-        highlightedRange = range
-
-        textStorage?.addAttributes([
-            .backgroundColor: NSColor.selectedTextBackgroundColor,
-            .foregroundColor: NSColor.selectedTextColor
-        ], range: range)
-    }
-
-    func restorePersistentHighlight(_ range: NSRange) {
-        setSelectedRange(range)
-        applyPersistentHighlight(range)
-    }
-
-    func copySelectionToPasteboard() -> Bool {
-        let selectedRange = selectedRange()
-        let range = selectedRange.length > 0 ? selectedRange : highlightedRange
-        guard let range, range.length > 0, NSMaxRange(range) <= (string as NSString).length else {
-            return false
-        }
-
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        return pasteboard.setString((string as NSString).substring(with: range), forType: .string)
-    }
-
-    override func copy(_ sender: Any?) {
-        _ = copySelectionToPasteboard()
-    }
-
-    private func clearPersistentHighlight() {
-        guard let highlightedRange, let highlightedSnapshot else {
-            return
-        }
-
-        textStorage?.replaceCharacters(in: highlightedRange, with: highlightedSnapshot)
-        self.highlightedRange = nil
-        self.highlightedSnapshot = nil
+        return fallback
     }
 }

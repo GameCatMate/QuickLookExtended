@@ -1,0 +1,4 @@
+--install.check-files true
+--save-prefix ""
+--registry "https://registry.yarnpkg.com"
+--network-timeout 30000

@@ -1,6 +1,0 @@
-name: YAML Quick Look
-enabled: true
-ports:
-  - 8080 # public
-owner:
-  email: "demo@example.com"

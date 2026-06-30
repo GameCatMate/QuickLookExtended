@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package quicklook.extended.v1;
+
+message PreviewRequest {
+  string path = 1;
+  string content_type = 2;
+  int64 max_preview_bytes = 3;
+}
+
+message PreviewReply {
+  string title = 1;
+  bytes data = 2;
+  bool truncated = 3;
+}

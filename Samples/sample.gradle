@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'dev.gamecat.quicklook'
+version = '1.4.2'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+}
+
+application {
+    mainClass = 'demo.quicklook.SampleApp'
+}
+
+test {
+    useJUnitPlatform()
+}

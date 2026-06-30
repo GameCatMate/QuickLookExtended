@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		1A2B3C4D5E6F700000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000011 /* AppDelegate.swift */; };
 		1A2B3C4D5E6F700000000002 /* PreviewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000012 /* PreviewProvider.swift */; };
-		1A2B3C4D5E6F700000000003 /* YAMLHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000013 /* YAMLHighlighter.swift */; };
+		1A2B3C4D5E6F700000000003 /* SyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000013 /* SyntaxHighlighter.swift */; };
 		1A2B3C4D5E6F700000000004 /* QuickLookUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000014 /* QuickLookUI.framework */; };
-		1A2B3C4D5E6F700000000005 /* YAMLPreviewExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000021 /* YAMLPreviewExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1A2B3C4D5E6F700000000005 /* QuickLookExtendedPreviewExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000021 /* QuickLookExtendedPreviewExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,7 +20,7 @@
 			containerPortal = 1A2B3C4D5E6F700000000030 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 1A2B3C4D5E6F700000000041;
-			remoteInfo = YAMLPreviewExtension;
+			remoteInfo = QuickLookExtendedPreviewExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -31,7 +31,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				1A2B3C4D5E6F700000000005 /* YAMLPreviewExtension.appex in Embed App Extensions */,
+				1A2B3C4D5E6F700000000005 /* QuickLookExtendedPreviewExtension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -41,14 +41,14 @@
 /* Begin PBXFileReference section */
 		1A2B3C4D5E6F700000000011 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000012 /* PreviewProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewProvider.swift; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700000000013 /* YAMLHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YAMLHighlighter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000013 /* SyntaxHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntaxHighlighter.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000014 /* QuickLookUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLookUI.framework; path = System/Library/Frameworks/QuickLookUI.framework; sourceTree = SDKROOT; };
 		1A2B3C4D5E6F700000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700000000017 /* YAMLQuickLook.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = YAMLQuickLook.entitlements; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700000000018 /* YAMLPreviewExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = YAMLPreviewExtension.entitlements; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700000000020 /* YAMLQuickLook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YAMLQuickLook.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		1A2B3C4D5E6F700000000021 /* YAMLPreviewExtension.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = YAMLPreviewExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A2B3C4D5E6F700000000017 /* QuickLookExtended.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLookExtended.entitlements; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000018 /* QuickLookExtendedPreviewExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLookExtendedPreviewExtension.entitlements; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000020 /* QuickLookExtended.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickLookExtended.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A2B3C4D5E6F700000000021 /* QuickLookExtendedPreviewExtension.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = QuickLookExtendedPreviewExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,32 +73,32 @@
 		1A2B3C4D5E6F700000000024 = {
 			isa = PBXGroup;
 			children = (
-				1A2B3C4D5E6F700000000025 /* YAMLQuickLook */,
-				1A2B3C4D5E6F700000000026 /* YAMLPreviewExtension */,
+				1A2B3C4D5E6F700000000025 /* QuickLookExtended */,
+				1A2B3C4D5E6F700000000026 /* QuickLookExtendedPreviewExtension */,
 				1A2B3C4D5E6F700000000027 /* Frameworks */,
 				1A2B3C4D5E6F700000000028 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		1A2B3C4D5E6F700000000025 /* YAMLQuickLook */ = {
+		1A2B3C4D5E6F700000000025 /* QuickLookExtended */ = {
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700000000011 /* AppDelegate.swift */,
 				1A2B3C4D5E6F700000000015 /* Info.plist */,
-				1A2B3C4D5E6F700000000017 /* YAMLQuickLook.entitlements */,
+				1A2B3C4D5E6F700000000017 /* QuickLookExtended.entitlements */,
 			);
-			path = YAMLQuickLook;
+			path = QuickLookExtended;
 			sourceTree = "<group>";
 		};
-		1A2B3C4D5E6F700000000026 /* YAMLPreviewExtension */ = {
+		1A2B3C4D5E6F700000000026 /* QuickLookExtendedPreviewExtension */ = {
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700000000012 /* PreviewProvider.swift */,
-				1A2B3C4D5E6F700000000013 /* YAMLHighlighter.swift */,
+				1A2B3C4D5E6F700000000013 /* SyntaxHighlighter.swift */,
 				1A2B3C4D5E6F700000000016 /* Info.plist */,
-				1A2B3C4D5E6F700000000018 /* YAMLPreviewExtension.entitlements */,
+				1A2B3C4D5E6F700000000018 /* QuickLookExtendedPreviewExtension.entitlements */,
 			);
-			path = YAMLPreviewExtension;
+			path = QuickLookExtendedPreviewExtension;
 			sourceTree = "<group>";
 		};
 		1A2B3C4D5E6F700000000027 /* Frameworks */ = {
@@ -112,8 +112,8 @@
 		1A2B3C4D5E6F700000000028 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1A2B3C4D5E6F700000000020 /* YAMLQuickLook.app */,
-				1A2B3C4D5E6F700000000021 /* YAMLPreviewExtension.appex */,
+				1A2B3C4D5E6F700000000020 /* QuickLookExtended.app */,
+				1A2B3C4D5E6F700000000021 /* QuickLookExtendedPreviewExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -121,9 +121,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		1A2B3C4D5E6F700000000040 /* YAMLQuickLook */ = {
+		1A2B3C4D5E6F700000000040 /* QuickLookExtended */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1A2B3C4D5E6F700000000050 /* Build configuration list for PBXNativeTarget "YAMLQuickLook" */;
+			buildConfigurationList = 1A2B3C4D5E6F700000000050 /* Build configuration list for PBXNativeTarget "QuickLookExtended" */;
 			buildPhases = (
 				1A2B3C4D5E6F700000000060 /* Sources */,
 				1A2B3C4D5E6F700000000022 /* Frameworks */,
@@ -134,14 +134,14 @@
 			dependencies = (
 				1A2B3C4D5E6F700000000008 /* PBXTargetDependency */,
 			);
-			name = YAMLQuickLook;
-			productName = YAMLQuickLook;
-			productReference = 1A2B3C4D5E6F700000000020 /* YAMLQuickLook.app */;
+			name = QuickLookExtended;
+			productName = QuickLookExtended;
+			productReference = 1A2B3C4D5E6F700000000020 /* QuickLookExtended.app */;
 			productType = "com.apple.product-type.application";
 		};
-		1A2B3C4D5E6F700000000041 /* YAMLPreviewExtension */ = {
+		1A2B3C4D5E6F700000000041 /* QuickLookExtendedPreviewExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1A2B3C4D5E6F700000000051 /* Build configuration list for PBXNativeTarget "YAMLPreviewExtension" */;
+			buildConfigurationList = 1A2B3C4D5E6F700000000051 /* Build configuration list for PBXNativeTarget "QuickLookExtendedPreviewExtension" */;
 			buildPhases = (
 				1A2B3C4D5E6F700000000061 /* Sources */,
 				1A2B3C4D5E6F700000000023 /* Frameworks */,
@@ -150,9 +150,9 @@
 			);
 			dependencies = (
 			);
-			name = YAMLPreviewExtension;
-			productName = YAMLPreviewExtension;
-			productReference = 1A2B3C4D5E6F700000000021 /* YAMLPreviewExtension.appex */;
+			name = QuickLookExtendedPreviewExtension;
+			productName = QuickLookExtendedPreviewExtension;
+			productReference = 1A2B3C4D5E6F700000000021 /* QuickLookExtendedPreviewExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -173,7 +173,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 1A2B3C4D5E6F700000000052 /* Build configuration list for PBXProject "YAMLQuickLook" */;
+			buildConfigurationList = 1A2B3C4D5E6F700000000052 /* Build configuration list for PBXProject "QuickLookExtended" */;
 			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -188,8 +188,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1A2B3C4D5E6F700000000040 /* YAMLQuickLook */,
-				1A2B3C4D5E6F700000000041 /* YAMLPreviewExtension */,
+				1A2B3C4D5E6F700000000040 /* QuickLookExtended */,
+				1A2B3C4D5E6F700000000041 /* QuickLookExtendedPreviewExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -208,7 +208,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A2B3C4D5E6F700000000002 /* PreviewProvider.swift in Sources */,
-				1A2B3C4D5E6F700000000003 /* YAMLHighlighter.swift in Sources */,
+				1A2B3C4D5E6F700000000003 /* SyntaxHighlighter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -217,7 +217,7 @@
 /* Begin PBXTargetDependency section */
 		1A2B3C4D5E6F700000000008 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 1A2B3C4D5E6F700000000041 /* YAMLPreviewExtension */;
+			target = 1A2B3C4D5E6F700000000041 /* QuickLookExtendedPreviewExtension */;
 			targetProxy = 1A2B3C4D5E6F700000000006 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -277,20 +277,20 @@
 		1A2B3C4D5E6F700000000072 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = YAMLQuickLook/YAMLQuickLook.entitlements;
+				CODE_SIGN_ENTITLEMENTS = QuickLookExtended/QuickLookExtended.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = YAMLQuickLook/Info.plist;
+				INFOPLIST_FILE = QuickLookExtended/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.gamecat.YAMLQuickLook;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.gamecat.QuickLookExtended;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
 			};
@@ -299,20 +299,20 @@
 		1A2B3C4D5E6F700000000073 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = YAMLQuickLook/YAMLQuickLook.entitlements;
+				CODE_SIGN_ENTITLEMENTS = QuickLookExtended/QuickLookExtended.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = YAMLQuickLook/Info.plist;
+				INFOPLIST_FILE = QuickLookExtended/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.gamecat.YAMLQuickLook;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.gamecat.QuickLookExtended;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
 			};
@@ -322,7 +322,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = YAMLPreviewExtension/YAMLPreviewExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = QuickLookExtendedPreviewExtension/QuickLookExtendedPreviewExtension.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -330,15 +330,18 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = YAMLPreviewExtension/Info.plist;
+				INFOPLIST_FILE = QuickLookExtendedPreviewExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.gamecat.YAMLQuickLook.PreviewExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.gamecat.QuickLookExtended.PreviewExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				QLE_BINARY_SNIFF_BYTES = 16384;
+				QLE_MAX_HIGHLIGHTED_BYTES = 262144;
+				QLE_MAX_PREVIEW_BYTES = 524288;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 6.0;
 			};
@@ -348,7 +351,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = YAMLPreviewExtension/YAMLPreviewExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = QuickLookExtendedPreviewExtension/QuickLookExtendedPreviewExtension.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -356,15 +359,18 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = YAMLPreviewExtension/Info.plist;
+				INFOPLIST_FILE = QuickLookExtendedPreviewExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.gamecat.YAMLQuickLook.PreviewExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.gamecat.QuickLookExtended.PreviewExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				QLE_BINARY_SNIFF_BYTES = 16384;
+				QLE_MAX_HIGHLIGHTED_BYTES = 262144;
+				QLE_MAX_PREVIEW_BYTES = 524288;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 6.0;
 			};
@@ -373,7 +379,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1A2B3C4D5E6F700000000050 /* Build configuration list for PBXNativeTarget "YAMLQuickLook" */ = {
+		1A2B3C4D5E6F700000000050 /* Build configuration list for PBXNativeTarget "QuickLookExtended" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1A2B3C4D5E6F700000000072 /* Debug */,
@@ -382,7 +388,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1A2B3C4D5E6F700000000051 /* Build configuration list for PBXNativeTarget "YAMLPreviewExtension" */ = {
+		1A2B3C4D5E6F700000000051 /* Build configuration list for PBXNativeTarget "QuickLookExtendedPreviewExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1A2B3C4D5E6F700000000074 /* Debug */,
@@ -391,7 +397,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1A2B3C4D5E6F700000000052 /* Build configuration list for PBXProject "YAMLQuickLook" */ = {
+		1A2B3C4D5E6F700000000052 /* Build configuration list for PBXProject "QuickLookExtended" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1A2B3C4D5E6F700000000070 /* Debug */,

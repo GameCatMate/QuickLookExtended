@@ -1,0 +1,21 @@
+{
+  "name": "quicklook-demo",
+  "version": "1.4.2",
+  "enabled": true,
+  "ports": [8080, 9090, 9443],
+  "labels": {
+    "environment": "staging",
+    "team": "platform",
+    "tier": "backend"
+  },
+  "thresholds": {
+    "latencyP95": 250.5,
+    "errorRate": 0.01,
+    "workers": 6
+  },
+  "features": [
+    "plain-text-preview",
+    "syntax-highlighting",
+    "native-selection"
+  ]
+}

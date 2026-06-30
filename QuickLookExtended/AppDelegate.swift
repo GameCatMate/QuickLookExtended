@@ -5,7 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let label = NSTextField(labelWithString: "YAML Quick Look is installed.\nMove this app to Applications, launch it once, then press Space on .yaml, .yml, or .tf files.")
+        let label = NSTextField(labelWithString: "QuickLookExtended is installed.\nMove this app to Applications, launch it once, then press Space on supported text files.")
         label.alignment = .center
         label.font = .systemFont(ofSize: 15)
         label.lineBreakMode = .byWordWrapping
@@ -26,7 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "YAML Quick Look"
+        window.title = "QuickLookExtended"
         window.contentView = contentView
         window.center()
         window.makeKeyAndOrderFront(nil)

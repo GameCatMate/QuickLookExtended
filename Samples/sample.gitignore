@@ -1,0 +1,16 @@
+# Build output
+build/
+DerivedData/
+*.xcarchive
+*.dSYM
+
+# Swift Package Manager
+.build/
+Package.resolved
+
+# Local files
+.env
+*.local
+.DS_Store
+.idea/
+.vscode/

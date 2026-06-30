@@ -1,8 +1,43 @@
 .DS_Store
+
+# Build output
 build/
 DerivedData/
+.build/
+.swiftpm/
+*.app
+*.appex
+*.qlgenerator
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+*.pkg
+*.dmg
+*.zip
+
+# Signing / provisioning secrets
+*.p12
+*.mobileprovision
+*.provisionprofile
+
+# Xcode local state
 *.xcuserstate
 xcuserdata/
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
+
+# Local AI assistant / agent context
+AGENTS.md
+AGENTS.local.md
+CLAUDE.md
+CLAUDE.local.md
+.agents/
+.codex/
+.claude/
+.cursor/
+.cursorrules
+.continue/
+.windsurf/
+.aider*
+*.prompt.md

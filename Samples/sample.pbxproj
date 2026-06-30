@@ -1,0 +1,27 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	objectVersion = 56;
+	objects = {
+		1D6058900D05DD3D006BFB54 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1600;
+			};
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D6058940D05DD3D006BFB54 /* Sample */,
+			);
+		};
+		1D6058940D05DD3D006BFB54 /* Sample */ = {
+			isa = PBXNativeTarget;
+			name = Sample;
+			productName = Sample;
+			productType = "com.apple.product-type.tool";
+		};
+	};
+	rootObject = 1D6058900D05DD3D006BFB54 /* Project object */;
+}
