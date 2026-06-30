@@ -16,6 +16,14 @@ Press Space in Finder and preview YAML, Terraform, configs, scripts, source file
 
 The published DMG is the recommended install path. However you can build from [source](#build-from-source) if you want custom preview or highlighting limits; see [Build Settings](#build-settings).
 
+## Compatibility
+
+The published DMG is a universal macOS build:
+
+- Architectures: Apple Silicon (`arm64`) and Intel (`x86_64`)
+- Supported macOS: macOS 13 or newer, including macOS 13, 14, 15, and current macOS 26.x releases
+- Not supported: macOS 12 and older
+
 ## Features
 
 - Native Quick Look preview window.
@@ -108,7 +116,7 @@ open Samples
 
 Requirements:
 
-- macOS 13 or newer
+- macOS 13 or newer on Apple Silicon or Intel
 - Xcode 16 or newer
 
 Build the app:
@@ -132,11 +140,11 @@ mkdir -p ~/Applications
 ditto build/DerivedData/Build/Products/Release/QuickLookExtended.app ~/Applications/QuickLookExtended.app
 pluginkit -r build/DerivedData/Build/Products/Release/QuickLookExtended.app/Contents/PlugIns/QuickLookExtendedPreviewExtension.appex
 pluginkit -a ~/Applications/QuickLookExtended.app/Contents/PlugIns/QuickLookExtendedPreviewExtension.appex
-qlmanage -r
-qlmanage -r cache
 ```
 
 The `pluginkit -r` line unregisters the temporary build product. Without it, System Settings may show two QuickLookExtended entries: one from `build/DerivedData` and one from `~/Applications`.
+
+If Finder keeps using an old cached preview, restart Finder. As a last resort, run `qlmanage -r` and `qlmanage -r cache`; they only reset Quick Look registration/cache and are not required for normal install or uninstall.
 
 ## Enable Or Disable
 
@@ -151,8 +159,6 @@ Find `QuickLookExtended` under Quick Look and enable or disable it there.
 ```bash
 pluginkit -r ~/Applications/QuickLookExtended.app/Contents/PlugIns/QuickLookExtendedPreviewExtension.appex
 rm -rf ~/Applications/QuickLookExtended.app
-qlmanage -r
-qlmanage -r cache
 ```
 
 ## Release Builds
