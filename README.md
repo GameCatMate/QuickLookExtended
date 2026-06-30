@@ -6,7 +6,7 @@ Press Space in Finder and preview YAML, Terraform, configs, scripts, source file
 
 ## Quick Start
 
-1. Download [QuickLookExtended.dmg](https://github.com/GameCatMate/QuickLookExtended/releases/latest/download/QuickLookExtended.dmg) from the latest GitHub release.
+1. Download the signed and notarized [QuickLookExtended.dmg](https://github.com/GameCatMate/QuickLookExtended/releases/latest/download/QuickLookExtended.dmg) from the latest GitHub release.
 2. Open the DMG.
 3. Drag `QuickLookExtended.app` to `Applications`.
 4. Launch `QuickLookExtended.app` once.
@@ -14,7 +14,7 @@ Press Space in Finder and preview YAML, Terraform, configs, scripts, source file
 6. Enable `QuickLookExtended` under Quick Look.
 7. Select a supported file in Finder and press Space.
 
-If the DMG is not available yet, build the app yourself from [source](#build-from-source).
+The published DMG is the recommended install path. However you can build from [source](#build-from-source) if you want custom preview or highlighting limits; see [Build Settings](#build-settings).
 
 ## Features
 
@@ -157,6 +157,10 @@ qlmanage -r cache
 
 ## Release Builds
 
-For public binary releases, build with a Developer ID Application certificate, zip the `.app`, submit it to Apple notarization, staple the result, and publish the notarized archive on GitHub Releases.
+For public binary releases, build with a Developer ID Application certificate, package the `.app` into a DMG, submit it to Apple notarization, staple the result, and publish the notarized DMG on GitHub Releases.
 
 Source builds do not require notarization because users build the app locally.
+
+## License
+
+QuickLookExtended is released under the [MIT License](LICENSE).
