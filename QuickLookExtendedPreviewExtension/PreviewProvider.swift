@@ -134,7 +134,8 @@ final class PreviewProvider: QLPreviewProvider, QLPreviewingController {
         let sourceURL = previewSourceURL(for: url)
         let attributes = try? FileManager.default.attributesOfItem(atPath: sourceURL.path)
         let size = (attributes?[.size] as? NSNumber)?.intValue ?? 0
-        let readLimit = min(size, Self.config.maxPreviewBytes)
+        let readLimit = Self.config.maxPreviewBytes == 0 ? size : min(size, Self.config.maxPreviewBytes)
+        let truncated = Self.config.maxPreviewBytes > 0 && size > Self.config.maxPreviewBytes
 
         guard readLimit > 0 else {
             return (Data(), false)
@@ -150,14 +151,14 @@ final class PreviewProvider: QLPreviewProvider, QLPreviewingController {
         }
 
         guard firstChunk.count < readLimit else {
-            return (firstChunk, size > Self.config.maxPreviewBytes)
+            return (firstChunk, truncated)
         }
 
         var data = firstChunk
         if let rest = try handle.read(upToCount: readLimit - firstChunk.count) {
             data.append(rest)
         }
-        return (data, size > Self.config.maxPreviewBytes)
+        return (data, truncated)
     }
 
     private static func previewSourceURL(for url: URL) -> URL {
@@ -203,7 +204,7 @@ private enum Syntax: Equatable {
 }
 
 private struct PreviewConfig {
-    private static let defaultMaxPreviewBytes = 512 * 1024
+    private static let defaultMaxPreviewBytes = 0
     private static let defaultMaxHighlightedBytes = 256 * 1024
     private static let defaultBinarySniffBytes = 16 * 1024
 
@@ -215,10 +216,22 @@ private struct PreviewConfig {
         // Xcode substitutes QLE_* build settings into these Info.plist keys during build.
         let info = Bundle(for: PreviewProvider.self).infoDictionary ?? [:]
         return PreviewConfig(
-            maxPreviewBytes: positiveInt("QLEMaxPreviewBytes", in: info, fallback: defaultMaxPreviewBytes),
+            maxPreviewBytes: nonNegativeInt("QLEMaxPreviewBytes", in: info, fallback: defaultMaxPreviewBytes),
             maxHighlightedBytes: positiveInt("QLEMaxHighlightedBytes", in: info, fallback: defaultMaxHighlightedBytes),
             binarySniffBytes: positiveInt("QLEBinarySniffBytes", in: info, fallback: defaultBinarySniffBytes)
         )
+    }
+
+    private static func nonNegativeInt(_ key: String, in info: [String: Any], fallback: Int) -> Int {
+        if let number = info[key] as? NSNumber, number.intValue >= 0 {
+            return number.intValue
+        }
+
+        if let string = info[key] as? String, let value = Int(string), value >= 0 {
+            return value
+        }
+
+        return fallback
     }
 
     private static func positiveInt(_ key: String, in info: [String: Any], fallback: Int) -> Int {

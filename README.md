@@ -4,6 +4,18 @@ QuickLookExtended is a macOS Quick Look preview extension for text-like files th
 
 Press Space in Finder and preview YAML, Terraform, configs, scripts, source files, certificates, and extensionless text files without opening an editor.
 
+## Quick Start
+
+1. Download [QuickLookExtended.dmg](https://github.com/GameCatMate/QuickLookExtended/releases/latest/download/QuickLookExtended.dmg) from the latest GitHub release.
+2. Open the DMG.
+3. Drag `QuickLookExtended.app` to `Applications`.
+4. Launch `QuickLookExtended.app` once.
+5. Open `System Settings -> General -> Login Items & Extensions -> Extensions`.
+6. Enable `QuickLookExtended` under Quick Look.
+7. Select a supported file in Finder and press Space.
+
+If the DMG is not available yet, build the app yourself from [source](#build-from-source).
+
 ## Features
 
 - Native Quick Look preview window.
@@ -36,13 +48,22 @@ Known issue:
 
 ## Size Limits
 
-QuickLookExtended is optimized for quick inspection, not full-file editing.
+QuickLookExtended defaults to behavior close to native Quick Look: it reads the whole text file for preview unless you set a preview limit at build time.
 
 - Files up to `QLE_MAX_HIGHLIGHTED_BYTES` get syntax highlighting. Default: `262144` bytes (`256 KB`).
-- Files up to `QLE_MAX_PREVIEW_BYTES` are previewed. Default: `524288` bytes (`512 KB`).
-- Files larger than `QLE_MAX_PREVIEW_BYTES` show the first configured preview bytes and append `... preview truncated ...`.
-- Large files use plain text instead of highlighted RTF for speed.
+- `QLE_MAX_PREVIEW_BYTES` controls how many bytes are read from the file. Default: `0`, which means no preview-size limit.
+- If `QLE_MAX_PREVIEW_BYTES` is greater than `0`, files larger than that value show the first configured bytes and append `... preview truncated ...`.
+- Files larger than `QLE_MAX_HIGHLIGHTED_BYTES` use plain text instead of highlighted RTF for speed.
 - The first `QLE_BINARY_SNIFF_BYTES` bytes are checked before previewing broad `public.data` files. Default: `16384` bytes (`16 KB`).
+
+Examples:
+
+- `QLE_MAX_PREVIEW_BYTES=0`: read the whole text file, closest to native Quick Look.
+- `QLE_MAX_PREVIEW_BYTES=1048576`: preview only the first `1 MB`.
+- `QLE_MAX_HIGHLIGHTED_BYTES=262144`: highlight files up to `256 KB`; larger files still open, but without syntax highlighting.
+- `QLE_BINARY_SNIFF_BYTES=16384`: check the first `16 KB` before treating extensionless or broad `public.data` files as text.
+
+Keep `QLE_MAX_HIGHLIGHTED_BYTES` modest. Highlighting is the slow part because it creates an attributed string and converts it to RTF. The preview limit can be unlimited while the highlight limit stays small.
 
 ## Build Settings
 
@@ -57,7 +78,7 @@ xcodebuild \
   -derivedDataPath build/DerivedData \
   CODE_SIGN_STYLE=Manual \
   CODE_SIGN_IDENTITY=- \
-  QLE_MAX_PREVIEW_BYTES=1048576 \
+  QLE_MAX_PREVIEW_BYTES=0 \
   QLE_MAX_HIGHLIGHTED_BYTES=262144 \
   QLE_BINARY_SNIFF_BYTES=16384 \
   build
@@ -65,11 +86,11 @@ xcodebuild \
 
 Available settings:
 
-- `QLE_MAX_PREVIEW_BYTES`: maximum bytes read from a file.
+- `QLE_MAX_PREVIEW_BYTES`: maximum bytes read from a file. Use `0` for no limit. Default: `0`.
 - `QLE_MAX_HIGHLIGHTED_BYTES`: maximum UTF-8 preview size that gets RTF syntax highlighting.
 - `QLE_BINARY_SNIFF_BYTES`: bytes checked before accepting an unknown or extensionless file as text.
 
-Keep `QLE_MAX_HIGHLIGHTED_BYTES` lower than `QLE_MAX_PREVIEW_BYTES`. Highlighting is the slow part because it creates an attributed string and converts it to RTF.
+If you set `QLE_MAX_PREVIEW_BYTES` to a positive value, keep `QLE_MAX_HIGHLIGHTED_BYTES` lower than it. If `QLE_MAX_PREVIEW_BYTES=0`, only the highlight limit controls when the extension falls back to plain text.
 
 In Xcode, the same values live on the `QuickLookExtendedPreviewExtension` target as user-defined build settings. Change them there if you prefer building from the UI. The extension reads the resolved `QLEMaxPreviewBytes`, `QLEMaxHighlightedBytes`, and `QLEBinarySniffBytes` values from its built `Info.plist`, so changing these settings requires rebuilding the app.
 
