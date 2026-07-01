@@ -12,6 +12,7 @@
 		1A2B3C4D5E6F700000000003 /* SyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000013 /* SyntaxHighlighter.swift */; };
 		1A2B3C4D5E6F700000000004 /* QuickLookUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000014 /* QuickLookUI.framework */; };
 		1A2B3C4D5E6F700000000005 /* QuickLookExtendedPreviewExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000021 /* QuickLookExtendedPreviewExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1A2B3C4D5E6F700000000009 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000019 /* AppIcon.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		1A2B3C4D5E6F700000000016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000017 /* QuickLookExtended.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLookExtended.entitlements; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000018 /* QuickLookExtendedPreviewExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLookExtendedPreviewExtension.entitlements; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000019 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000020 /* QuickLookExtended.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickLookExtended.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A2B3C4D5E6F700000000021 /* QuickLookExtendedPreviewExtension.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = QuickLookExtendedPreviewExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -85,6 +87,7 @@
 			children = (
 				1A2B3C4D5E6F700000000011 /* AppDelegate.swift */,
 				1A2B3C4D5E6F700000000015 /* Info.plist */,
+				1A2B3C4D5E6F700000000019 /* AppIcon.icns */,
 				1A2B3C4D5E6F700000000017 /* QuickLookExtended.entitlements */,
 			);
 			path = QuickLookExtended;
@@ -127,6 +130,7 @@
 			buildPhases = (
 				1A2B3C4D5E6F700000000060 /* Sources */,
 				1A2B3C4D5E6F700000000022 /* Frameworks */,
+				1A2B3C4D5E6F700000000062 /* Resources */,
 				1A2B3C4D5E6F700000000007 /* Embed App Extensions */,
 			);
 			buildRules = (
@@ -193,6 +197,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A2B3C4D5E6F700000000062 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F700000000009 /* AppIcon.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1A2B3C4D5E6F700000000060 /* Sources */ = {
