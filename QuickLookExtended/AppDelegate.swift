@@ -19,12 +19,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             _ = LSRegisterURL(bundleURL, false)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.statusLabel.stringValue = "QuickLookExtended is installed. Enable it in Quick Look settings if it is not already enabled."
+            self.statusLabel.stringValue = "QuickLookExtended is registered. Enable it in macOS Quick Look settings if it is not already enabled."
         }
     }
 
     private func showWindow() {
-        NSApp.setActivationPolicy(.accessory)
+        NSApp.setActivationPolicy(.regular)
 
         let title = NSTextField(labelWithString: "QuickLookExtended")
         title.font = .boldSystemFont(ofSize: 22)
@@ -43,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusLabel.lineBreakMode = .byWordWrapping
         statusLabel.maximumNumberOfLines = 0
 
-        let settingsButton = NSButton(title: "Open Quick Look Settings", target: self, action: #selector(openSettings))
+        let settingsButton = NSButton(title: "Open System Settings", target: self, action: #selector(openSettings))
         settingsButton.bezelStyle = .rounded
 
         let doneButton = NSButton(title: "Done", target: self, action: #selector(done))

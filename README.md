@@ -10,7 +10,7 @@ Press Space in Finder and preview YAML, Terraform, configs, scripts, source file
 2. Open the DMG.
 3. Drag `QuickLookExtended.app` to `Applications`.
 4. Launch `QuickLookExtended.app`.
-5. In the setup window, click `Open Quick Look Settings`.
+5. In the setup window, click `Open System Settings`.
 6. Enable `QuickLookExtended` under Quick Look if it is not already enabled.
 7. Select a supported file in Finder and press Space.
 
