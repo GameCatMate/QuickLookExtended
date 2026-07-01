@@ -10,9 +10,13 @@ Press Space in Finder and preview YAML, Terraform, configs, scripts, source file
 2. Open the DMG.
 3. Drag `QuickLookExtended.app` to `Applications`.
 4. Launch `QuickLookExtended.app`.
-5. In the setup window, click `Open System Settings`.
-6. Enable `QuickLookExtended` under Quick Look if it is not already enabled.
-7. Select a supported file in Finder and press Space.
+5. The setup window checks the Quick Look extension and Login Item status.
+6. Click `Open System Settings` and enable `QuickLookExtended` under Quick Look if needed.
+7. Click `Add to Login Items` if you want QuickLookExtended to verify setup at login.
+8. When the window says everything is ready, click `Done`.
+9. Select a supported file in Finder and press Space.
+
+After a ready setup is confirmed, launches from Login Items quit silently. The setup window appears again only when the tracked settings change.
 
 The published DMG is the recommended install path. However you can build from [source](#build-from-source) if you want custom preview or highlighting limits; see [Build Settings](#build-settings).
 
@@ -33,6 +37,7 @@ The published DMG is a universal macOS build:
 - Fast plain-text fallback for larger files.
 - Extensionless files are previewed when they look like text.
 - Binary files are rejected quickly so macOS can show the normal generic preview.
+- The setup app tracks Quick Look and Login Item status, then stays quiet after a confirmed ready setup.
 
 ## Supported Formats
 
