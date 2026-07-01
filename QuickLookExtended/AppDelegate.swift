@@ -263,19 +263,41 @@ private enum ExtensionState: String {
     }
 
     static func current() -> ExtensionState {
-        guard let output = runPlugInKit(),
-              let line = output.components(separatedBy: .newlines).first(where: { $0.contains(quickLookExtensionIdentifier) }) else {
+        guard let output = runPlugInKit() else {
             return .missing
         }
 
+        let lines = output.components(separatedBy: .newlines).filter { $0.contains(quickLookExtensionIdentifier) }
+        guard let line = lineForCurrentApp(in: lines) ?? lines.first else {
+            return .missing
+        }
+
+        return state(from: line)
+    }
+
+    private static func lineForCurrentApp(in lines: [String]) -> String? {
+        guard let plugInPath = Bundle.main.builtInPlugInsURL?
+            .appendingPathComponent("QuickLookExtendedPreviewExtension.appex")
+            .standardizedFileURL
+            .path else {
+            return nil
+        }
+
+        return lines.first { $0.contains(plugInPath) }
+    }
+
+    private static func state(from line: String) -> ExtensionState {
         let trimmed = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        if trimmed.hasPrefix("+") {
+        if trimmed.hasPrefix("+") || trimmed.hasPrefix("!") {
             return .enabled
         }
         if trimmed.hasPrefix("-") {
             return .disabled
         }
-        return .registered
+        if trimmed.hasPrefix("=") || trimmed.hasPrefix("?") {
+            return .registered
+        }
+        return .enabled
     }
 
     private static func runPlugInKit() -> String? {
