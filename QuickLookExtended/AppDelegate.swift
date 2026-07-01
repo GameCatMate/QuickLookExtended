@@ -1,7 +1,6 @@
 import Cocoa
 import CoreServices
 
-@main
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
