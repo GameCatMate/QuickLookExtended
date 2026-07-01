@@ -9,9 +9,9 @@ Press Space in Finder and preview YAML, Terraform, configs, scripts, source file
 1. Download the signed and notarized [QuickLookExtended.dmg](https://github.com/GameCatMate/QuickLookExtended/releases/latest/download/QuickLookExtended.dmg) from the latest GitHub release.
 2. Open the DMG.
 3. Drag `QuickLookExtended.app` to `Applications`.
-4. Launch `QuickLookExtended.app` once.
-5. Open `System Settings -> General -> Login Items & Extensions -> Extensions`.
-6. Enable `QuickLookExtended` under Quick Look.
+4. Launch `QuickLookExtended.app`.
+5. In the setup window, click `Open Quick Look Settings`.
+6. Enable `QuickLookExtended` under Quick Look if it is not already enabled.
 7. Select a supported file in Finder and press Space.
 
 The published DMG is the recommended install path. However you can build from [source](#build-from-source) if you want custom preview or highlighting limits; see [Build Settings](#build-settings).
