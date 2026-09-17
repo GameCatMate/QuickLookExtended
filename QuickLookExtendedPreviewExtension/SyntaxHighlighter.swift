@@ -114,6 +114,10 @@ enum MarkdownRenderer {
         h1, h2, h3, h4, h5, h6 { line-height: 1.2; margin: 1em 0 0.45em; }
         p, ul, ol, pre { margin: 0 0 1em; }
         a { color: LinkText; }
+        table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 1em; }
+        th, td { padding: 6px 8px; border: 1px solid color-mix(in srgb, CanvasText 18%, Canvas); vertical-align: top; overflow-wrap: anywhere; }
+        th { font-weight: 600; }
+        td code, th code { padding: 2px 4px; border-radius: 4px; background: color-mix(in srgb, CanvasText 8%, Canvas); }
         </style>
         </head>
         <body>
@@ -142,8 +146,12 @@ enum MarkdownRenderer {
             inList = false
         }
 
-        for line in text.components(separatedBy: .newlines) {
+        let lines = text.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: .newlines)
+        var index = 0
+        while index < lines.count {
+            let line = lines[index]
             let trimmed = line.trimmingCharacters(in: .whitespaces)
+            index += 1
 
             if trimmed.hasPrefix("```") {
                 flushParagraph()
@@ -179,6 +187,23 @@ enum MarkdownRenderer {
                     inList = true
                 }
                 html += "<li>\(inline(item))</li>\n"
+            } else if index < lines.count,
+                      let header = tableCells(from: trimmed),
+                      let alignments = tableAlignments(from: lines[index]),
+                      header.count == alignments.count {
+                flushParagraph()
+                closeList()
+                html += "<table><thead>\(tableRow(header, alignments: alignments, isHeader: true))</thead><tbody>\n"
+                index += 1
+                while index < lines.count {
+                    let row = lines[index].trimmingCharacters(in: .whitespaces)
+                    guard !row.hasPrefix("```"), !row.hasPrefix("> "),
+                          heading(from: row) == nil, unorderedListItem(from: row) == nil,
+                          let cells = tableCells(from: row) else { break }
+                    html += tableRow(cells, alignments: alignments) + "\n"
+                    index += 1
+                }
+                html += "</tbody></table>\n"
             } else {
                 paragraph.append(trimmed)
             }
@@ -190,6 +215,51 @@ enum MarkdownRenderer {
             html += "</code></pre>\n"
         }
         return html
+    }
+
+    private static func tableCells(from line: String) -> [String]? {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        var cells: [String] = []
+        var cell = ""
+        var characters = trimmed.makeIterator()
+        var endsWithSeparator = false
+        while let character = characters.next() {
+            endsWithSeparator = false
+            if character == "\\", let next = characters.next() {
+                // Escaped pipes belong to the cell, including inside inline code.
+                cell.append(next == "|" ? "" : "\\")
+                cell.append(next)
+            } else if character == "|" {
+                cells.append(cell.trimmingCharacters(in: .whitespaces))
+                cell = ""
+                endsWithSeparator = true
+            } else {
+                cell.append(character)
+            }
+        }
+        guard !cells.isEmpty else { return nil }
+        cells.append(cell.trimmingCharacters(in: .whitespaces))
+        if trimmed.hasPrefix("|") { cells.removeFirst() }
+        if endsWithSeparator { cells.removeLast() }
+        return cells.isEmpty ? nil : cells
+    }
+
+    private static func tableAlignments(from line: String) -> [String]? {
+        guard let cells = tableCells(from: line),
+              cells.allSatisfy({ $0.range(of: #"^:?-+:?$"#, options: .regularExpression) != nil }) else {
+            return nil
+        }
+        return cells.map { $0.hasSuffix(":") ? ($0.hasPrefix(":") ? "center" : "right") : "left" }
+    }
+
+    private static func tableRow(_ cells: [String], alignments: [String], isHeader: Bool = false) -> String {
+        let tag = isHeader ? "th" : "td"
+        let scope = isHeader ? #" scope="col""# : ""
+        let contents = alignments.enumerated().map { index, alignment in
+            let text = index < cells.count ? cells[index] : ""
+            return "<\(tag)\(scope) style=\"text-align: \(alignment)\">\(inline(text))</\(tag)>"
+        }.joined()
+        return "<tr>\(contents)</tr>"
     }
 
     private static func heading(from line: String) -> (level: Int, text: String)? {
