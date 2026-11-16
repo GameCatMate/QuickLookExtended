@@ -1,16 +1,14 @@
 import Cocoa
 import CoreServices
+import Darwin
 import ServiceManagement
 
 private let quickLookExtensionIdentifier = "dev.gamecat.QuickLookExtended.PreviewExtension"
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private static let savedReadySnapshotKey = "savedReadySnapshot"
-
     private var window: NSWindow?
     private let statusLabel = NSTextField(labelWithString: "")
-    private var currentState: SetupState?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         registerExtension()
@@ -20,7 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let bundlePath = Bundle.main.bundlePath
         DispatchQueue.global(qos: .utility).async {
             let bundleURL = URL(fileURLWithPath: bundlePath) as CFURL
-            _ = LSRegisterURL(bundleURL, false)
+            _ = LSRegisterURL(bundleURL, true)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.finishSetupCheck()
             }
@@ -29,15 +27,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func finishSetupCheck() {
         let state = SetupState.current()
-        currentState = state
 
-        if state.isReady, UserDefaults.standard.string(forKey: Self.savedReadySnapshotKey) == state.snapshot {
+        if LaunchContext.isAutomaticLoginLaunch {
             NSApp.terminate(nil)
             return
-        }
-
-        if state.isReady {
-            UserDefaults.standard.set(state.snapshot, forKey: Self.savedReadySnapshotKey)
         }
 
         showWindow(for: state)
@@ -189,9 +182,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func done() {
-        if let state = currentState, state.isReady {
-            UserDefaults.standard.set(state.snapshot, forKey: Self.savedReadySnapshotKey)
-        }
         NSApp.terminate(nil)
     }
 
@@ -200,17 +190,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+private enum LaunchContext {
+    static var isAutomaticLoginLaunch: Bool {
+        guard let parentName = parentProcessName()?.lowercased() else {
+            return false
+        }
+
+        return parentName.contains("backgroundtaskmanagement")
+            || parentName == "loginwindow"
+    }
+
+    private static func parentProcessName() -> String? {
+        var path = [CChar](repeating: 0, count: 4096)
+        let length = proc_pidpath(getppid(), &path, UInt32(path.count))
+        guard length > 0 else {
+            return nil
+        }
+
+        let processPath = path.withUnsafeBufferPointer { buffer in
+            buffer.baseAddress.flatMap(String.init(validatingCString:))
+        }
+        return processPath.map { URL(fileURLWithPath: $0).lastPathComponent }
+    }
+}
+
 private struct SetupState {
     let extensionState: ExtensionState
     let loginItem: LoginItemState
-    let appVersion: String
 
     var isReady: Bool {
         extensionState == .enabled && loginItem == .enabled
-    }
-
-    var snapshot: String {
-        "extension=\(extensionState.rawValue);login=\(loginItem.rawValue);version=\(appVersion)"
     }
 
     var extensionHelpText: String {
@@ -233,8 +242,7 @@ private struct SetupState {
     static func current() -> SetupState {
         SetupState(
             extensionState: .current(),
-            loginItem: .current(),
-            appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
+            loginItem: .current()
         )
     }
 }

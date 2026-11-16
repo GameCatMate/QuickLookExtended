@@ -82,6 +82,9 @@
 				<string>public.mpeg-2-transport-stream</string>
 				<string>com.microsoft.ini</string>
 				<string>com.wireguard.config.quick</string>
+				<string>public.directory</string>
+				<string>public.folder</string>
+				<string>public.zip-archive</string>
 				<string>public.data</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
@@ -321,6 +324,7 @@
 					<string>rst</string>
 					<string>service</string>
 					<string>toml</string>
+					<string>tpl</string>
 					<string>xcconfig</string>
 					<string>yarnrc</string>
 				</array>

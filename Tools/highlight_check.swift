@@ -1,10 +1,10 @@
 import AppKit
 import Foundation
+import UniformTypeIdentifiers
 
 @main
 struct HighlightCheck {
     static func main() {
-        checkMarkdownTables()
         let sample = """
         name: "demo"
         enabled: true
@@ -15,6 +15,24 @@ struct HighlightCheck {
         let attributed = YAMLHighlighter.attributed(sample, highlighted: true)
         assert(attributed.string == sample)
         assert(attributed.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor == .systemBlue)
+        let highlightedHTML = String(data: PreviewHTML.codeData(from: attributed), encoding: .utf8) ?? ""
+        assert(highlightedHTML.contains("qle-zoom-value"), highlightedHTML)
+        assert(highlightedHTML.contains("qle-wrap-toggle"), highlightedHTML)
+        assert(highlightedHTML.contains("qle-wrap-icon"), highlightedHTML)
+        assert(highlightedHTML.contains("qle-wrap-prompt"), highlightedHTML)
+        assert(highlightedHTML.contains("qle-nowrap"), highlightedHTML)
+        assert(!highlightedHTML.contains(">Wrap<"), highlightedHTML)
+        assert(!highlightedHTML.contains("qle-wrap-prompt\">&gt;</span>"), highlightedHTML)
+        assert(highlightedHTML.contains("gesturechange"), highlightedHTML)
+        assert(highlightedHTML.contains("<pre class=\"qle-code\">"), highlightedHTML)
+        assert(highlightedHTML.contains("color: rgb(0, 122, 255)"), highlightedHTML)
+        assert(highlightedHTML.contains("name:"), highlightedHTML)
+        let plainHTML = String(data: PreviewHTML.plainTextData(from: "plain <text>"), encoding: .utf8) ?? ""
+        assert(plainHTML.contains("plain &lt;text&gt;"), plainHTML)
+        let markdownHTML = String(data: MarkdownRenderer.htmlData(from: "# Title"), encoding: .utf8) ?? ""
+        assert(markdownHTML.contains("qle-zoom-value"), markdownHTML)
+        assert(markdownHTML.contains("<h1>Title</h1>"), markdownHTML)
+        checkMarkdownTables()
         let terraform = TerraformHighlighter.attributed("resource \"null_resource\" \"demo\" {\n  count = 1 # demo\n}\n")
         assert(terraform.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor == .systemBlue)
         assert(terraform.attribute(.foregroundColor, at: 9, effectiveRange: nil) as? NSColor == .systemGreen)
@@ -40,6 +58,38 @@ struct HighlightCheck {
         assert(!TextSniffer.isProbablyText(Data([0x00, 0x01, 0x02, 0x03])))
         assert(TextSniffer.text(from: Data("ssh -L 6443:127.0.0.1:6443\n".utf8)) != nil)
         assert(TextSniffer.text(from: Data([0x00, 0x01, 0x02, 0x03])) == nil)
+
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let folderURL = tempURL.appendingPathComponent("folder", isDirectory: true)
+        let nestedURL = folderURL.appendingPathComponent("nested", isDirectory: true)
+        let zipSourceURL = tempURL.appendingPathComponent("zip-source", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        try! FileManager.default.createDirectory(at: nestedURL, withIntermediateDirectories: true)
+        try! Data().write(to: folderURL.appendingPathComponent("beta.txt"))
+        let folderListing = try! PreviewProvider.listingHTML(for: folderURL, contentType: nil)
+        assert(folderListing?.contains("<table>") == true, folderListing ?? "nil")
+        assert(folderListing?.contains("qle-zoom-value") == true, folderListing ?? "nil")
+        assert(folderListing?.contains("beta.txt") == true, folderListing ?? "nil")
+        assert(folderListing?.contains("nested") == true, folderListing ?? "nil")
+
+        try! FileManager.default.createDirectory(at: zipSourceURL.appendingPathComponent("dir", isDirectory: true), withIntermediateDirectories: true)
+        try! Data().write(to: zipSourceURL.appendingPathComponent("a.txt"))
+        try! Data().write(to: zipSourceURL.appendingPathComponent("dir/b.txt"))
+        let zipURL = tempURL.appendingPathComponent("sample.zip")
+        let zip = Process()
+        zip.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+        zip.currentDirectoryURL = zipSourceURL
+        zip.arguments = ["-r", zipURL.path, "a.txt", "dir"]
+        zip.standardOutput = Pipe()
+        zip.standardError = Pipe()
+        try! zip.run()
+        zip.waitUntilExit()
+        assert(zip.terminationStatus == 0)
+        let zipListing = try! PreviewProvider.listingHTML(for: zipURL, contentType: .zip)
+        assert(zipListing?.contains("a.txt") == true, zipListing ?? "nil")
+        assert(zipListing?.contains("dir/") == true, zipListing ?? "nil")
+        assert(zipListing?.contains("dir/b.txt") == true, zipListing ?? "nil")
     }
 
     private static func checkMarkdownTables() {

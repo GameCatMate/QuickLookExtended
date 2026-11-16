@@ -97,35 +97,218 @@ enum TextSniffer {
     }
 }
 
-enum MarkdownRenderer {
-    // ponytail: common Markdown preview only; use a CommonMark library if full spec coverage matters.
-    static func htmlData(from text: String) -> Data {
-        let document = """
+enum PreviewHTML {
+    static func document(body: String, bodyClass: String = "", style: String = "") -> String {
+        """
         <!doctype html>
         <html>
         <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
         :root { color-scheme: light dark; }
-        body { font: -apple-system-body; margin: 24px 30px; line-height: 1.45; color: CanvasText; background: Canvas; }
-        code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
-        pre { padding: 12px; border-radius: 8px; overflow: auto; background: color-mix(in srgb, CanvasText 8%, Canvas); }
-        blockquote { margin-left: 0; padding-left: 14px; border-left: 3px solid color-mix(in srgb, CanvasText 30%, Canvas); color: color-mix(in srgb, CanvasText 75%, Canvas); }
-        h1, h2, h3, h4, h5, h6 { line-height: 1.2; margin: 1em 0 0.45em; }
-        p, ul, ol, pre { margin: 0 0 1em; }
-        a { color: LinkText; }
-        table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 1em; }
-        th, td { padding: 6px 8px; border: 1px solid color-mix(in srgb, CanvasText 18%, Canvas); vertical-align: top; overflow-wrap: anywhere; }
-        th { font-weight: 600; }
-        td code, th code { padding: 2px 4px; border-radius: 4px; background: color-mix(in srgb, CanvasText 8%, Canvas); }
+        html, body { min-height: 100%; background: Canvas; }
+        body { margin: 0; color: CanvasText; }
+        .qle-toolbar { position: fixed; top: 8px; right: 10px; z-index: 10; display: flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid color-mix(in srgb, CanvasText 16%, transparent); border-radius: 7px; background: color-mix(in srgb, Canvas 82%, transparent); -webkit-backdrop-filter: blur(18px) saturate(160%); box-shadow: 0 2px 10px color-mix(in srgb, CanvasText 14%, transparent); font: 12px -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; user-select: none; }
+        .qle-toolbar button { width: 26px; height: 24px; border: 0; border-radius: 5px; background: transparent; color: CanvasText; font: 17px -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1; }
+        .qle-toolbar button:hover { background: color-mix(in srgb, CanvasText 9%, transparent); }
+        .qle-toolbar button:active { transform: scale(0.94); background: color-mix(in srgb, CanvasText 14%, transparent); }
+        .qle-toolbar button:disabled { opacity: 0.35; }
+        .qle-toolbar button[aria-pressed="true"] { background: color-mix(in srgb, CanvasText 12%, transparent); }
+        .qle-toolbar .qle-wrap-toggle { width: 26px; }
+        .qle-wrap-icon { position: relative; display: inline-block; width: 17px; height: 10px; vertical-align: -1px; }
+        .qle-wrap-prompt { position: absolute; left: 0; top: 0; width: 6px; height: 8px; }
+        .qle-wrap-prompt::before, .qle-wrap-prompt::after { content: ""; position: absolute; top: 2px; right: 0; width: 6px; height: 2px; border-radius: 1px; background: currentColor; transform-origin: right center; }
+        .qle-wrap-prompt::before { transform: rotate(35deg); }
+        .qle-wrap-prompt::after { transform: rotate(-35deg); }
+        .qle-wrap-icon::before, .qle-wrap-icon::after { content: ""; position: absolute; left: 7px; right: 1px; height: 2px; border-radius: 1px; background: currentColor; }
+        .qle-wrap-icon::before { top: 2px; }
+        .qle-wrap-icon::after { bottom: 2px; right: 5px; }
+        .qle-wrap-toggle[aria-pressed="false"] .qle-wrap-prompt { top: 2px; }
+        .qle-wrap-toggle[aria-pressed="false"] .qle-wrap-icon::before { top: 4px; }
+        .qle-wrap-toggle[aria-pressed="false"] .qle-wrap-icon::after { display: none; }
+        .qle-zoom-value { min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; }
+        .qle-content { min-height: 100vh; }
+        @media (prefers-reduced-transparency: reduce) {
+            .qle-toolbar { background: Canvas; -webkit-backdrop-filter: none; }
+        }
+        \(style)
         </style>
         </head>
         <body>
-        \(render(text))
+        <div class="qle-toolbar" role="toolbar" aria-label="Zoom controls">
+        <button id="qle-zoom-out" type="button" aria-label="Zoom out">-</button>
+        <span id="qle-zoom-value" class="qle-zoom-value" aria-live="polite">100%</span>
+        <button id="qle-zoom-in" type="button" aria-label="Zoom in">+</button>
+        <button id="qle-wrap-toggle" class="qle-wrap-toggle" type="button" aria-label="Disable line wrap" aria-pressed="true" title="Disable line wrap"><span class="qle-wrap-icon" aria-hidden="true"><span class="qle-wrap-prompt"></span></span></button>
+        </div>
+        <main id="qle-content" class="qle-content \(bodyClass)">\(body)</main>
+        <script>
+        (() => {
+            const content = document.getElementById('qle-content');
+            const percent = document.getElementById('qle-zoom-value');
+            const outButton = document.getElementById('qle-zoom-out');
+            const inButton = document.getElementById('qle-zoom-in');
+            const wrapButton = document.getElementById('qle-wrap-toggle');
+            const minZoom = 0.5;
+            const maxZoom = 3;
+            const buttonStep = 0.1;
+            let zoom = 1;
+            let gestureStartZoom = 1;
+            let lineWrap = true;
+
+            function clamp(value) {
+                return Math.min(maxZoom, Math.max(minZoom, value));
+            }
+
+            function setZoom(value) {
+                zoom = Math.round(clamp(value) * 100) / 100;
+                content.style.zoom = String(zoom);
+                percent.textContent = Math.round(zoom * 100) + '%';
+                outButton.disabled = zoom <= minZoom;
+                inButton.disabled = zoom >= maxZoom;
+            }
+
+            outButton.addEventListener('click', () => setZoom(zoom - buttonStep));
+            inButton.addEventListener('click', () => setZoom(zoom + buttonStep));
+            wrapButton.addEventListener('click', () => setLineWrap(!lineWrap));
+
+            function setLineWrap(enabled) {
+                lineWrap = enabled;
+                content.classList.toggle('qle-nowrap', !lineWrap);
+                wrapButton.setAttribute('aria-pressed', String(lineWrap));
+                wrapButton.setAttribute('aria-label', lineWrap ? 'Disable line wrap' : 'Enable line wrap');
+                wrapButton.title = lineWrap ? 'Disable line wrap' : 'Enable line wrap';
+            }
+
+            document.addEventListener('gesturestart', (event) => {
+                event.preventDefault();
+                gestureStartZoom = zoom;
+            }, { passive: false });
+
+            document.addEventListener('gesturechange', (event) => {
+                event.preventDefault();
+                setZoom(gestureStartZoom * event.scale);
+            }, { passive: false });
+
+            document.addEventListener('wheel', (event) => {
+                if (!event.ctrlKey) {
+                    return;
+                }
+                event.preventDefault();
+                setZoom(zoom * Math.exp(-event.deltaY * 0.01));
+            }, { passive: false });
+
+            setZoom(zoom);
+            setLineWrap(lineWrap);
+        })();
+        </script>
         </body>
         </html>
         """
-        return Data(document.utf8)
+    }
+
+    static func plainTextData(from text: String) -> Data {
+        Data(document(body: #"<pre class="qle-code">\#(escape(text))</pre>"#, bodyClass: "qle-code-wrap", style: codeStyle).utf8)
+    }
+
+    static func codeData(from attributedText: NSAttributedString) -> Data {
+        Data(document(body: #"<pre class="qle-code">\#(attributedHTML(from: attributedText))</pre>"#, bodyClass: "qle-code-wrap", style: codeStyle).utf8)
+    }
+
+    static func escape(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+    }
+
+    private static let codeStyle = """
+    .qle-code-wrap { padding: 18px 24px 24px; }
+    .qle-code { margin: 0; font: 12px ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; line-height: 1.45; tab-size: 4; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .qle-code-wrap.qle-nowrap .qle-code { white-space: pre; overflow-wrap: normal; overflow: auto; }
+    """
+
+    private static func attributedHTML(from attributedText: NSAttributedString) -> String {
+        let source = attributedText.string as NSString
+        var html = ""
+        attributedText.enumerateAttributes(in: NSRange(location: 0, length: attributedText.length)) { attributes, range, _ in
+            let text = escape(source.substring(with: range))
+            let style = styleAttribute(from: attributes)
+            html += style.isEmpty ? text : #"<span style="\#(style)">\#(text)</span>"#
+        }
+        return html
+    }
+
+    private static func styleAttribute(from attributes: [NSAttributedString.Key: Any]) -> String {
+        var styles: [String] = []
+
+        if let color = attributes[.foregroundColor] as? NSColor, let css = cssColor(color) {
+            styles.append("color: \(css)")
+        }
+
+        if let font = attributes[.font] as? NSFont, NSFontManager.shared.traits(of: font).contains(.boldFontMask) {
+            styles.append("font-weight: 600")
+        }
+
+        if attributes[.obliqueness] != nil {
+            styles.append("font-style: italic")
+        }
+
+        return styles.joined(separator: "; ")
+    }
+
+    private static func cssColor(_ color: NSColor) -> String? {
+        if color == .labelColor {
+            return nil
+        }
+        if color == .secondaryLabelColor {
+            return "color-mix(in srgb, CanvasText 58%, Canvas)"
+        }
+        if color == .systemBlue {
+            return "rgb(0, 122, 255)"
+        }
+        if color == .systemGreen {
+            return "rgb(52, 199, 89)"
+        }
+        if color == .systemPurple {
+            return "rgb(175, 82, 222)"
+        }
+        if color == .systemOrange {
+            return "rgb(255, 149, 0)"
+        }
+
+        guard let rgb = color.usingColorSpace(.sRGB) ?? color.usingColorSpace(.deviceRGB) else {
+            return nil
+        }
+
+        return String(
+            format: "rgba(%d, %d, %d, %.3f)",
+            Int((rgb.redComponent * 255).rounded()),
+            Int((rgb.greenComponent * 255).rounded()),
+            Int((rgb.blueComponent * 255).rounded()),
+            rgb.alphaComponent
+        )
+    }
+}
+
+enum MarkdownRenderer {
+    // ponytail: common Markdown preview only; use a CommonMark library if full spec coverage matters.
+    static func htmlData(from text: String) -> Data {
+        Data(PreviewHTML.document(body: render(text), bodyClass: "qle-markdown", style: """
+        .qle-markdown { padding: 24px 30px; font: -apple-system-body; line-height: 1.45; }
+        .qle-markdown code, .qle-markdown pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+        .qle-markdown pre { padding: 12px; border-radius: 8px; overflow: auto; background: color-mix(in srgb, CanvasText 8%, Canvas); }
+        .qle-markdown blockquote { margin-left: 0; padding-left: 14px; border-left: 3px solid color-mix(in srgb, CanvasText 30%, Canvas); color: color-mix(in srgb, CanvasText 75%, Canvas); }
+        .qle-markdown h1, .qle-markdown h2, .qle-markdown h3, .qle-markdown h4, .qle-markdown h5, .qle-markdown h6 { padding-right: 130px; line-height: 1.2; margin: 1em 0 0.45em; }
+        .qle-markdown p, .qle-markdown ul, .qle-markdown ol, .qle-markdown pre { margin: 0 0 1em; }
+        .qle-markdown a { color: LinkText; }
+        .qle-markdown table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 1em; }
+        .qle-markdown th, .qle-markdown td { padding: 6px 8px; border: 1px solid color-mix(in srgb, CanvasText 18%, Canvas); vertical-align: top; overflow-wrap: anywhere; }
+        .qle-markdown th { font-weight: 600; }
+        .qle-markdown td code, .qle-markdown th code { padding: 2px 4px; border-radius: 4px; background: color-mix(in srgb, CanvasText 8%, Canvas); }
+        """).utf8)
     }
 
     private static func render(_ text: String) -> String {

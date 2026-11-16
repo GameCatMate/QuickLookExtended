@@ -1,8 +1,8 @@
 # QuickLookExtended
 
-QuickLookExtended is a macOS Quick Look preview extension for text-like files that Finder does not always preview well by default.
+QuickLookExtended is a macOS Quick Look preview extension for text-like files, folders, and `.zip` archives.
 
-Press Space in Finder and preview YAML, Terraform, configs, scripts, source files, certificates, and extensionless text files without opening an editor.
+Press Space in Finder and preview YAML, Terraform, configs, scripts, source files, certificates, extensionless text files, folders, and `.zip` archives without opening an editor or extracting an archive.
 
 ## Quick Start
 
@@ -14,7 +14,7 @@ Press Space in Finder and preview YAML, Terraform, configs, scripts, source file
 6. Click `Open System Settings` and enable `QuickLookExtended` under Quick Look if needed.
 7. Click `Add to Login Items` if you want QuickLookExtended to verify setup at login.
 8. When the window says everything is ready, click `Done`.
-9. Select a supported file in Finder and press Space.
+9. Select a supported file, folder, or `.zip` archive in Finder and press Space.
 
 After a ready setup is confirmed, launches from Login Items quit silently. The setup window appears again only when the tracked settings change.
 
@@ -34,12 +34,17 @@ The published DMG is a universal macOS build:
 - Text selection and copy work like regular Quick Look.
 - Syntax highlighting for small and medium files.
 - Rendered Markdown preview for `.md` and `.markdown`.
+- Finder-like contents preview for folders and `.zip` archives.
 - Fast plain-text fallback for larger files.
 - Extensionless files are previewed when they look like text.
-- Binary files are rejected quickly so macOS can show the normal generic preview.
+- Unsupported binary files are rejected quickly so macOS can show the normal generic preview.
 - The setup app tracks Quick Look and Login Item status, then stays quiet after a confirmed ready setup.
 
-## Supported Formats
+## Supported Items
+
+- Folders: Finder-like contents preview.
+- ZIP archives: contents preview without extracting.
+- `.tpl` templates: plain-text preview of the template source.
 
 Highlighted formats:
 
@@ -61,12 +66,12 @@ Known issue:
 
 ## Size Limits
 
-QuickLookExtended defaults to behavior close to native Quick Look: it reads the whole text file for preview unless you set a preview limit at build time.
+For text previews, QuickLookExtended defaults to behavior close to native Quick Look: it reads the whole text file unless you set a preview limit at build time.
 
-- Files up to `QLE_MAX_HIGHLIGHTED_BYTES` get syntax highlighting. Default: `262144` bytes (`256 KB`).
-- `QLE_MAX_PREVIEW_BYTES` controls how many bytes are read from the file. Default: `0`, which means no preview-size limit.
-- If `QLE_MAX_PREVIEW_BYTES` is greater than `0`, files larger than that value show the first configured bytes and append `... preview truncated ...`.
-- Files larger than `QLE_MAX_HIGHLIGHTED_BYTES` use plain text instead of highlighted RTF for speed.
+- Text files up to `QLE_MAX_HIGHLIGHTED_BYTES` get syntax highlighting. Default: `262144` bytes (`256 KB`).
+- `QLE_MAX_PREVIEW_BYTES` controls how many bytes are read from a text file. Default: `0`, which means no preview-size limit.
+- If `QLE_MAX_PREVIEW_BYTES` is greater than `0`, text files larger than that value show the first configured bytes and append `... preview truncated ...`.
+- Text files larger than `QLE_MAX_HIGHLIGHTED_BYTES` use plain text instead of highlighted RTF for speed.
 - The first `QLE_BINARY_SNIFF_BYTES` bytes are checked before previewing broad `public.data` files. Default: `16384` bytes (`16 KB`).
 
 Examples:
@@ -99,7 +104,7 @@ xcodebuild \
 
 Available settings:
 
-- `QLE_MAX_PREVIEW_BYTES`: maximum bytes read from a file. Use `0` for no limit. Default: `0`.
+- `QLE_MAX_PREVIEW_BYTES`: maximum bytes read from a text file. Use `0` for no limit. Default: `0`.
 - `QLE_MAX_HIGHLIGHTED_BYTES`: maximum UTF-8 preview size that gets RTF syntax highlighting.
 - `QLE_BINARY_SNIFF_BYTES`: bytes checked before accepting an unknown or extensionless file as text.
 
@@ -111,7 +116,7 @@ In Xcode, the same values live on the `QuickLookExtendedPreviewExtension` target
 
 Sample files live in `Samples/`. Markdown checks are in `Samples/sample.md` and `Samples/sample.markdown`.
 
-Open the folder in Finder, select a sample, and press Space to see how the preview looks:
+Open the folder in Finder, select a sample, folder, or `.zip` archive, and press Space to see how the preview looks:
 
 ```bash
 open Samples

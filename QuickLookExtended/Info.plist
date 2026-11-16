@@ -429,6 +429,7 @@
 					<string>rst</string>
 					<string>service</string>
 					<string>toml</string>
+					<string>tpl</string>
 					<string>xcconfig</string>
 					<string>yarnrc</string>
 				</array>
